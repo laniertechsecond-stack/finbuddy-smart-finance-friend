@@ -6,30 +6,102 @@ import {
   Film, 
   Smartphone,
   GraduationCap,
-  MoreHorizontal
+  MoreHorizontal,
+  Plus
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useBudget } from "@/hooks/useBudget";
+import { Button } from "@/components/ui/button";
 
-interface Category {
-  id: string;
-  name: string;
-  spent: number;
-  budget: number;
-  icon: typeof Utensils;
-  color: string;
-  bgColor: string;
+const iconMap: Record<string, typeof Utensils> = {
+  utensils: Utensils,
+  food: Utensils,
+  home: Home,
+  rent: Home,
+  car: Car,
+  transport: Car,
+  'shopping-bag': ShoppingBag,
+  shopping: ShoppingBag,
+  film: Film,
+  entertainment: Film,
+  smartphone: Smartphone,
+  subscriptions: Smartphone,
+  'graduation-cap': GraduationCap,
+  education: GraduationCap,
+};
+
+const colorMap: Record<string, { text: string; bg: string }> = {
+  coral: { text: 'text-finbud-coral', bg: 'bg-finbud-coral-light' },
+  blue: { text: 'text-finbud-blue', bg: 'bg-finbud-blue-light' },
+  green: { text: 'text-finbud-green', bg: 'bg-finbud-green-light' },
+  purple: { text: 'text-finbud-purple', bg: 'bg-finbud-purple-light' },
+  gold: { text: 'text-finbud-gold', bg: 'bg-finbud-gold-light' },
+};
+
+interface SpendingCategoriesProps {
+  onAddCategory?: () => void;
 }
 
-const categories: Category[] = [
-  { id: "food", name: "Food & Dining", spent: 245, budget: 400, icon: Utensils, color: "text-finbud-coral", bgColor: "bg-finbud-coral-light" },
-  { id: "rent", name: "Rent", spent: 800, budget: 800, icon: Home, color: "text-finbud-blue", bgColor: "bg-finbud-blue-light" },
-  { id: "transport", name: "Transport", spent: 65, budget: 150, icon: Car, color: "text-finbud-green", bgColor: "bg-finbud-green-light" },
-  { id: "shopping", name: "Shopping", spent: 120, budget: 200, icon: ShoppingBag, color: "text-finbud-purple", bgColor: "bg-finbud-purple-light" },
-  { id: "entertainment", name: "Entertainment", spent: 45, budget: 100, icon: Film, color: "text-finbud-gold", bgColor: "bg-finbud-gold-light" },
-  { id: "subscriptions", name: "Subscriptions", spent: 35, budget: 50, icon: Smartphone, color: "text-primary", bgColor: "bg-finbud-blue-light" },
-];
+export function SpendingCategories({ onAddCategory }: SpendingCategoriesProps) {
+  const { categories, transactions, loading } = useBudget();
 
-export function SpendingCategories() {
+  // Calculate spending per category from transactions this month
+  const now = new Date();
+  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+  const monthlyExpenses = transactions.filter(
+    t => t.transaction_date >= monthStart.split('T')[0] && t.type === 'expense'
+  );
+
+  const categorySpending = categories.map(cat => {
+    const spent = monthlyExpenses
+      .filter(t => t.category_id === cat.id)
+      .reduce((sum, t) => sum + t.amount, 0);
+    return { ...cat, spent };
+  });
+
+  if (loading) {
+    return (
+      <div className="animate-slide-up" style={{ animationDelay: "0.2s" }}>
+        <div className="flex items-center justify-between mb-3 px-1">
+          <h3 className="text-sm font-semibold text-muted-foreground">Spending by Category</h3>
+        </div>
+        <div className="space-y-3">
+          {[1, 2, 3].map(i => (
+            <div key={i} className="bg-card rounded-2xl p-4 animate-pulse">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-xl bg-muted" />
+                <div className="flex-1 space-y-2">
+                  <div className="h-4 bg-muted rounded w-1/2" />
+                  <div className="h-2 bg-muted rounded w-full" />
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (categories.length === 0) {
+    return (
+      <div className="animate-slide-up" style={{ animationDelay: "0.2s" }}>
+        <div className="flex items-center justify-between mb-3 px-1">
+          <h3 className="text-sm font-semibold text-muted-foreground">Spending by Category</h3>
+          {onAddCategory && (
+            <Button variant="ghost" size="sm" onClick={onAddCategory}>
+              <Plus className="w-4 h-4 mr-1" />
+              Add
+            </Button>
+          )}
+        </div>
+        <div className="bg-card rounded-2xl p-8 text-center">
+          <p className="text-muted-foreground">No budget categories yet</p>
+          <p className="text-sm text-muted-foreground mt-1">Add expenses to see your spending</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="animate-slide-up" style={{ animationDelay: "0.2s" }}>
       <div className="flex items-center justify-between mb-3 px-1">
@@ -40,11 +112,14 @@ export function SpendingCategories() {
       </div>
       
       <div className="space-y-3">
-        {categories.map((category) => {
-          const Icon = category.icon;
-          const percentUsed = (category.spent / category.budget) * 100;
+        {categorySpending.map((category) => {
+          const Icon = iconMap[category.icon] || MoreHorizontal;
+          const colors = colorMap[category.color] || colorMap.blue;
+          const percentUsed = category.budget_amount > 0 
+            ? (category.spent / category.budget_amount) * 100 
+            : 0;
           const isOverBudget = percentUsed > 100;
-          const isWarning = percentUsed > 80;
+          const isWarning = percentUsed > 80 && percentUsed <= 100;
           
           return (
             <div 
@@ -52,8 +127,8 @@ export function SpendingCategories() {
               className="bg-card rounded-2xl p-4 shadow-sm hover:shadow-finbud transition-shadow"
             >
               <div className="flex items-center gap-3">
-                <div className={cn("w-12 h-12 rounded-xl flex items-center justify-center", category.bgColor)}>
-                  <Icon className={cn("w-6 h-6", category.color)} />
+                <div className={cn("w-12 h-12 rounded-xl flex items-center justify-center", colors.bg)}>
+                  <Icon className={cn("w-6 h-6", colors.text)} />
                 </div>
                 
                 <div className="flex-1 min-w-0">
@@ -63,7 +138,12 @@ export function SpendingCategories() {
                       "font-semibold",
                       isOverBudget ? "text-destructive" : "text-foreground"
                     )}>
-                      ${category.spent}
+                      ${category.spent.toFixed(0)}
+                      {isOverBudget && (
+                        <span className="text-xs text-destructive ml-1">
+                          (+${(category.spent - category.budget_amount).toFixed(0)})
+                        </span>
+                      )}
                     </span>
                   </div>
                   
@@ -82,9 +162,15 @@ export function SpendingCategories() {
                       />
                     </div>
                     <span className="text-xs text-muted-foreground whitespace-nowrap">
-                      ${category.budget}
+                      ${category.budget_amount}
                     </span>
                   </div>
+                  
+                  {isOverBudget && (
+                    <p className="text-xs text-destructive mt-1">
+                      Over budget by ${(category.spent - category.budget_amount).toFixed(2)}
+                    </p>
+                  )}
                 </div>
               </div>
             </div>
