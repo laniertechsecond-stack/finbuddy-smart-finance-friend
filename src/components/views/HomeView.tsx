@@ -6,21 +6,32 @@ import { RecentTransactions } from "@/components/dashboard/RecentTransactions";
 import { LearningProgress } from "@/components/dashboard/LearningProgress";
 import { AddExpenseModal } from "@/components/modals/AddExpenseModal";
 import { SetGoalModal } from "@/components/modals/SetGoalModal";
+import { AddCategoryModal } from "@/components/modals/AddCategoryModal";
 import { useBudget } from "@/hooks/useBudget";
+import { useLearning } from "@/hooks/useLearning";
+import { useProfile } from "@/hooks/useProfile";
 
-export function HomeView() {
+interface HomeViewProps {
+  onNavigateToLearn?: () => void;
+}
+
+export function HomeView({ onNavigateToLearn }: HomeViewProps) {
   const [showAddExpense, setShowAddExpense] = useState(false);
   const [showSetGoal, setShowSetGoal] = useState(false);
+  const [showAddCategory, setShowAddCategory] = useState(false);
   const { totalBudget, totalSpent, remaining, loading, addTransaction, categories } = useBudget();
+  const { totalCompletedLessons, totalLessons, getNextLesson } = useLearning();
+  const { profile } = useProfile();
 
   const percentUsed = totalBudget > 0 ? (totalSpent / totalBudget) * 100 : 0;
+  const nextLesson = getNextLesson();
 
   return (
     <div className="space-y-6 pb-24">
       <BudgetOverview 
-        totalBudget={totalBudget || 2000}
+        totalBudget={totalBudget}
         spent={totalSpent}
-        remaining={remaining || 2000}
+        remaining={remaining}
         percentUsed={percentUsed}
       />
       
@@ -30,14 +41,14 @@ export function HomeView() {
       />
       
       <LearningProgress 
-        completedLessons={8}
-        totalLessons={24}
-        currentStreak={5}
-        nextLesson="Credit Score Basics"
-        onStartLesson={() => {}}
+        completedLessons={totalCompletedLessons}
+        totalLessons={totalLessons}
+        currentStreak={profile?.current_streak || 0}
+        nextLesson={nextLesson?.lesson.title || "All lessons complete!"}
+        onStartLesson={onNavigateToLearn || (() => {})}
       />
       
-      <SpendingCategories />
+      <SpendingCategories onAddCategory={() => setShowAddCategory(true)} />
       
       <RecentTransactions />
 
@@ -51,6 +62,11 @@ export function HomeView() {
       <SetGoalModal 
         open={showSetGoal} 
         onOpenChange={setShowSetGoal} 
+      />
+
+      <AddCategoryModal
+        open={showAddCategory}
+        onOpenChange={setShowAddCategory}
       />
     </div>
   );

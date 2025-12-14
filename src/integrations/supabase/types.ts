@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      badges: {
+        Row: {
+          category: string
+          description: string
+          icon: string
+          id: string
+          name: string
+          unlock_criteria: string
+        }
+        Insert: {
+          category?: string
+          description: string
+          icon: string
+          id?: string
+          name: string
+          unlock_criteria: string
+        }
+        Update: {
+          category?: string
+          description?: string
+          icon?: string
+          id?: string
+          name?: string
+          unlock_criteria?: string
+        }
+        Relationships: []
+      }
       budget_categories: {
         Row: {
           budget_amount: number
@@ -101,8 +128,72 @@ export type Database = {
         }
         Relationships: []
       }
+      lesson_content: {
+        Row: {
+          content: string
+          id: string
+          module_id: string
+          order_index: number
+          quiz_answer: number | null
+          quiz_options: Json | null
+          quiz_question: string | null
+          title: string
+        }
+        Insert: {
+          content: string
+          id: string
+          module_id: string
+          order_index?: number
+          quiz_answer?: number | null
+          quiz_options?: Json | null
+          quiz_question?: string | null
+          title: string
+        }
+        Update: {
+          content?: string
+          id?: string
+          module_id?: string
+          order_index?: number
+          quiz_answer?: number | null
+          quiz_options?: Json | null
+          quiz_question?: string | null
+          title?: string
+        }
+        Relationships: []
+      }
+      notifications: {
+        Row: {
+          created_at: string
+          id: string
+          message: string
+          read: boolean | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          message: string
+          read?: boolean | null
+          title: string
+          type?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          message?: string
+          read?: boolean | null
+          title?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
+          avatar_choice: string | null
           avatar_url: string | null
           created_at: string
           current_streak: number | null
@@ -115,6 +206,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          avatar_choice?: string | null
           avatar_url?: string | null
           created_at?: string
           current_streak?: number | null
@@ -127,6 +219,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          avatar_choice?: string | null
           avatar_url?: string | null
           created_at?: string
           current_streak?: number | null
@@ -219,6 +312,35 @@ export type Database = {
             columns: ["category_id"]
             isOneToOne: false
             referencedRelation: "budget_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_badges: {
+        Row: {
+          badge_id: string
+          earned_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          badge_id: string
+          earned_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          badge_id?: string
+          earned_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_badges_badge_id_fkey"
+            columns: ["badge_id"]
+            isOneToOne: false
+            referencedRelation: "badges"
             referencedColumns: ["id"]
           },
         ]

@@ -42,7 +42,7 @@ const Index = () => {
   const renderContent = () => {
     switch (activeTab) {
       case "home":
-        return <HomeView />;
+        return <HomeView onNavigateToLearn={() => setActiveTab("learn")} />;
       case "budget":
         return <BudgetView />;
       case "learn":
@@ -52,7 +52,7 @@ const Index = () => {
       case "profile":
         return <ProfileView />;
       default:
-        return <HomeView />;
+        return <HomeView onNavigateToLearn={() => setActiveTab("learn")} />;
     }
   };
 
