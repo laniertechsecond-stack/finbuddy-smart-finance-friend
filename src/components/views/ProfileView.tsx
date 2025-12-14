@@ -17,6 +17,9 @@ import {
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Progress } from "@/components/ui/progress";
+import { useAuth } from "@/hooks/useAuth";
+import { useProfile } from "@/hooks/useProfile";
+import { toast } from "sonner";
 
 const badges = [
   { id: "starter", name: "Starter", icon: Star, earned: true, color: "text-finbud-gold" },
@@ -35,11 +38,21 @@ const menuItems = [
 ];
 
 export function ProfileView() {
-  const userName = "Sam";
-  const level = 4;
-  const currentXP = 350;
-  const nextLevelXP = 500;
+  const { user, signOut } = useAuth();
+  const { profile } = useProfile();
+  
+  const userName = profile?.display_name || user?.email?.split('@')[0] || 'User';
+  const level = profile?.level || 1;
+  const currentXP = profile?.current_xp || 0;
+  const nextLevelXP = level * 150; // Each level requires more XP
   const xpProgress = (currentXP / nextLevelXP) * 100;
+  const totalPoints = profile?.total_points || 0;
+  const streak = profile?.current_streak || 0;
+
+  const handleSignOut = async () => {
+    await signOut();
+    toast.success("Signed out successfully");
+  };
 
   return (
     <div className="space-y-6 pb-24">
@@ -47,11 +60,11 @@ export function ProfileView() {
       <div className="bg-card rounded-3xl p-6 shadow-finbud animate-slide-up">
         <div className="flex items-center gap-4 mb-6">
           <div className="w-20 h-20 rounded-2xl gradient-hero flex items-center justify-center text-3xl font-bold text-primary-foreground shadow-glow">
-            {userName.charAt(0)}
+            {userName.charAt(0).toUpperCase()}
           </div>
           <div className="flex-1">
             <h1 className="text-2xl font-bold text-foreground">{userName}</h1>
-            <p className="text-muted-foreground">student@university.edu</p>
+            <p className="text-muted-foreground">{user?.email}</p>
           </div>
           <Button variant="ghost" size="icon">
             <Settings className="w-5 h-5" />
@@ -78,17 +91,17 @@ export function ProfileView() {
       <div className="grid grid-cols-3 gap-3 animate-slide-up" style={{ animationDelay: "0.1s" }}>
         <div className="bg-finbud-gold-light rounded-2xl p-4 text-center">
           <Star className="w-6 h-6 text-finbud-gold mx-auto mb-1" />
-          <p className="text-2xl font-bold text-foreground">250</p>
+          <p className="text-2xl font-bold text-foreground">{totalPoints}</p>
           <p className="text-xs text-muted-foreground">Points</p>
         </div>
         <div className="bg-finbud-coral-light rounded-2xl p-4 text-center">
           <Flame className="w-6 h-6 text-finbud-coral mx-auto mb-1" />
-          <p className="text-2xl font-bold text-foreground">5</p>
+          <p className="text-2xl font-bold text-foreground">{streak}</p>
           <p className="text-xs text-muted-foreground">Day Streak</p>
         </div>
         <div className="bg-finbud-purple-light rounded-2xl p-4 text-center">
           <Trophy className="w-6 h-6 text-finbud-purple mx-auto mb-1" />
-          <p className="text-2xl font-bold text-foreground">4</p>
+          <p className="text-2xl font-bold text-foreground">{badges.filter(b => b.earned).length}</p>
           <p className="text-xs text-muted-foreground">Badges</p>
         </div>
       </div>
@@ -150,6 +163,7 @@ export function ProfileView() {
 
       {/* Logout Button */}
       <Button 
+        onClick={handleSignOut}
         variant="outline" 
         className="w-full h-12 rounded-2xl border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground"
       >

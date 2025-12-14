@@ -20,13 +20,16 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import type { Tables, TablesInsert } from "@/integrations/supabase/types";
 
 interface AddExpenseModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  categories?: Tables<'budget_categories'>[];
+  onAddTransaction?: (transaction: Omit<TablesInsert<'transactions'>, 'user_id'>) => Promise<{ error: Error | null }>;
 }
 
-const categories = [
+const defaultCategories = [
   { id: "food", name: "Food", icon: Utensils, color: "bg-finbud-coral-light text-finbud-coral" },
   { id: "transport", name: "Transport", icon: Car, color: "bg-finbud-green-light text-finbud-green" },
   { id: "shopping", name: "Shopping", icon: ShoppingBag, color: "bg-finbud-purple-light text-finbud-purple" },
@@ -37,24 +40,65 @@ const categories = [
   { id: "other", name: "Other", icon: MoreHorizontal, color: "bg-muted text-muted-foreground" },
 ];
 
-export function AddExpenseModal({ open, onOpenChange }: AddExpenseModalProps) {
+const iconMap: Record<string, typeof Utensils> = {
+  food: Utensils,
+  transport: Car,
+  shopping: ShoppingBag,
+  entertainment: Film,
+  subscriptions: Smartphone,
+  rent: Home,
+  education: GraduationCap,
+  other: MoreHorizontal,
+};
+
+export function AddExpenseModal({ open, onOpenChange, categories, onAddTransaction }: AddExpenseModalProps) {
   const [amount, setAmount] = useState("");
   const [merchant, setMerchant] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = () => {
+  const displayCategories = categories?.length 
+    ? categories.map(cat => ({
+        id: cat.id,
+        name: cat.name,
+        icon: iconMap[cat.icon] || MoreHorizontal,
+        color: `bg-${cat.color}-light text-${cat.color}` || "bg-muted text-muted-foreground",
+      }))
+    : defaultCategories;
+
+  const handleSubmit = async () => {
     if (!amount || !selectedCategory) {
       toast.error("Please fill in all required fields");
       return;
     }
+
+    setIsSubmitting(true);
+
+    if (onAddTransaction) {
+      const { error } = await onAddTransaction({
+        amount: parseFloat(amount),
+        merchant: merchant || undefined,
+        category_id: selectedCategory,
+        type: 'expense',
+        description: merchant || 'Expense',
+      });
+
+      if (error) {
+        toast.error("Failed to add expense");
+        setIsSubmitting(false);
+        return;
+      }
+    }
     
+    const categoryName = displayCategories.find(c => c.id === selectedCategory)?.name;
     toast.success(`Expense of $${amount} added successfully!`, {
-      description: `Category: ${categories.find(c => c.id === selectedCategory)?.name}`
+      description: `Category: ${categoryName}`
     });
     
     setAmount("");
     setMerchant("");
     setSelectedCategory("");
+    setIsSubmitting(false);
     onOpenChange(false);
   };
 
@@ -98,7 +142,7 @@ export function AddExpenseModal({ open, onOpenChange }: AddExpenseModalProps) {
           <div className="space-y-2">
             <Label className="text-sm text-muted-foreground">Category</Label>
             <div className="grid grid-cols-4 gap-2">
-              {categories.map((category) => {
+              {displayCategories.map((category) => {
                 const Icon = category.icon;
                 const isSelected = selectedCategory === category.id;
                 
@@ -115,7 +159,7 @@ export function AddExpenseModal({ open, onOpenChange }: AddExpenseModalProps) {
                   >
                     <div className={cn(
                       "w-10 h-10 rounded-xl flex items-center justify-center",
-                      isSelected ? "bg-primary-foreground/20" : category.color
+                      isSelected ? "bg-primary-foreground/20" : "bg-card"
                     )}>
                       <Icon className={cn("w-5 h-5", isSelected && "text-primary-foreground")} />
                     </div>
@@ -131,8 +175,9 @@ export function AddExpenseModal({ open, onOpenChange }: AddExpenseModalProps) {
             onClick={handleSubmit}
             className="w-full h-12 rounded-2xl"
             variant="hero"
+            disabled={isSubmitting}
           >
-            Add Expense
+            {isSubmitting ? "Adding..." : "Add Expense"}
           </Button>
         </div>
       </DialogContent>

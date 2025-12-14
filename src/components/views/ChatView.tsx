@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { 
   Send, 
   Wallet, 
@@ -6,18 +6,19 @@ import {
   Sparkles,
   Bot,
   User,
-  ArrowRight
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { streamChat } from "@/lib/chatStream";
+import { toast } from "sonner";
 
 type BotType = "budget" | "learn";
 
 interface Message {
   id: string;
   content: string;
-  sender: "user" | "bot";
+  role: "user" | "assistant";
   timestamp: Date;
 }
 
@@ -41,7 +42,7 @@ const initialMessages: Record<BotType, Message[]> = {
     {
       id: "1",
       content: "Hey! 👋 I'm BudgetBot, your personal finance assistant. I can help you track spending, plan budgets, and reach your savings goals. What would you like to know?",
-      sender: "bot",
+      role: "assistant",
       timestamp: new Date(),
     },
   ],
@@ -49,7 +50,7 @@ const initialMessages: Record<BotType, Message[]> = {
     {
       id: "1",
       content: "Hi there! 📚 I'm LearnBot, your finance tutor. I can explain concepts, quiz you, and help you master money skills. What do you want to learn about today?",
-      sender: "bot",
+      role: "assistant",
       timestamp: new Date(),
     },
   ],
@@ -66,49 +67,58 @@ export function ChatView() {
     setMessages(initialMessages[type]);
   };
 
-  const handleSend = async (content: string) => {
-    if (!content.trim()) return;
+  const handleSend = useCallback(async (content: string) => {
+    if (!content.trim() || isTyping) return;
 
     const userMessage: Message = {
       id: Date.now().toString(),
       content,
-      sender: "user",
+      role: "user",
       timestamp: new Date(),
     };
 
-    setMessages((prev) => [...prev, userMessage]);
+    const newMessages = [...messages, userMessage];
+    setMessages(newMessages);
     setInput("");
     setIsTyping(true);
 
-    // Simulate bot response
-    setTimeout(() => {
-      const botResponses: Record<BotType, string[]> = {
-        budget: [
-          "Based on your spending this week, you have about $85 left for food. That's around $12 per day. Would you like me to suggest some budget-friendly meal ideas?",
-          "Great question! Looking at your current spending rate, you're on track to save $180 this month. To hit $200, try cutting your entertainment budget by $20.",
-          "I've analyzed your subscriptions. You're spending $45/month on streaming services. Consider sharing accounts or dropping one you rarely use - that's $15+ saved monthly!",
-        ],
-        learn: [
-          "A credit score is like a report card for how well you handle borrowed money! It goes from 300 to 850. The higher your score, the more banks trust you. Think of it as your financial reputation! 🌟",
-          "Compound interest is when your money makes money, and then THAT money makes even more money! It's like a snowball rolling downhill - it starts small but grows bigger over time. 📈",
-          "Here's a beginner quiz: What percentage of income should go to savings according to the 50/30/20 rule? A) 10% B) 20% C) 30% D) 50%",
-        ],
-      };
-      
-      const responses = botResponses[botType];
-      const randomResponse = responses[Math.floor(Math.random() * responses.length)];
+    let assistantContent = "";
 
-      const botMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        content: randomResponse,
-        sender: "bot",
-        timestamp: new Date(),
-      };
+    const upsertAssistant = (nextChunk: string) => {
+      assistantContent += nextChunk;
+      setMessages(prev => {
+        const last = prev[prev.length - 1];
+        if (last?.role === "assistant" && last.id.startsWith("streaming-")) {
+          return prev.map((m, i) => 
+            i === prev.length - 1 ? { ...m, content: assistantContent } : m
+          );
+        }
+        return [...prev, { 
+          id: `streaming-${Date.now()}`, 
+          content: assistantContent, 
+          role: "assistant" as const, 
+          timestamp: new Date() 
+        }];
+      });
+    };
 
-      setMessages((prev) => [...prev, botMessage]);
-      setIsTyping(false);
-    }, 1500);
-  };
+    // Convert messages to format expected by API
+    const apiMessages = newMessages.map(m => ({
+      role: m.role,
+      content: m.content,
+    }));
+
+    await streamChat({
+      messages: apiMessages,
+      botType,
+      onDelta: upsertAssistant,
+      onDone: () => setIsTyping(false),
+      onError: (error) => {
+        setIsTyping(false);
+        toast.error(error);
+      },
+    });
+  }, [messages, botType, isTyping]);
 
   return (
     <div className="flex flex-col h-[calc(100vh-180px)]">
@@ -147,20 +157,20 @@ export function ChatView() {
             key={message.id}
             className={cn(
               "flex gap-3 animate-slide-up",
-              message.sender === "user" ? "flex-row-reverse" : ""
+              message.role === "user" ? "flex-row-reverse" : ""
             )}
           >
             <div
               className={cn(
                 "w-9 h-9 rounded-xl flex items-center justify-center shrink-0",
-                message.sender === "user"
+                message.role === "user"
                   ? "bg-primary"
                   : botType === "budget"
                   ? "gradient-hero"
                   : "bg-finbud-purple"
               )}
             >
-              {message.sender === "user" ? (
+              {message.role === "user" ? (
                 <User className="w-5 h-5 text-primary-foreground" />
               ) : (
                 <Bot className="w-5 h-5 text-primary-foreground" />
@@ -169,17 +179,17 @@ export function ChatView() {
             <div
               className={cn(
                 "max-w-[80%] rounded-2xl px-4 py-3",
-                message.sender === "user"
+                message.role === "user"
                   ? "bg-primary text-primary-foreground rounded-tr-sm"
                   : "bg-card shadow-sm rounded-tl-sm"
               )}
             >
-              <p className="text-sm leading-relaxed">{message.content}</p>
+              <p className="text-sm leading-relaxed whitespace-pre-wrap">{message.content}</p>
             </div>
           </div>
         ))}
 
-        {isTyping && (
+        {isTyping && messages[messages.length - 1]?.role !== "assistant" && (
           <div className="flex gap-3 animate-slide-up">
             <div
               className={cn(
@@ -227,12 +237,13 @@ export function ChatView() {
           onKeyDown={(e) => e.key === "Enter" && handleSend(input)}
           placeholder={`Ask ${botType === "budget" ? "BudgetBot" : "LearnBot"}...`}
           className="h-12 rounded-2xl border-2 focus:border-primary bg-card"
+          disabled={isTyping}
         />
         <Button
           onClick={() => handleSend(input)}
           size="icon"
           className="h-12 w-12 rounded-2xl shrink-0"
-          disabled={!input.trim()}
+          disabled={!input.trim() || isTyping}
         >
           <Send className="w-5 h-5" />
         </Button>

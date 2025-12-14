@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { useSavingsGoals } from "@/hooks/useSavingsGoals";
 
 interface SetGoalModalProps {
   open: boolean;
@@ -38,10 +39,27 @@ export function SetGoalModal({ open, onOpenChange }: SetGoalModalProps) {
   const [goalName, setGoalName] = useState("");
   const [targetAmount, setTargetAmount] = useState("");
   const [selectedType, setSelectedType] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { addGoal } = useSavingsGoals();
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!goalName || !targetAmount || !selectedType) {
       toast.error("Please fill in all fields");
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    const { error } = await addGoal({
+      name: goalName,
+      target_amount: parseFloat(targetAmount),
+      goal_type: selectedType,
+      icon: selectedType,
+    });
+
+    if (error) {
+      toast.error("Failed to create goal");
+      setIsSubmitting(false);
       return;
     }
     
@@ -53,6 +71,7 @@ export function SetGoalModal({ open, onOpenChange }: SetGoalModalProps) {
     setGoalName("");
     setTargetAmount("");
     setSelectedType("");
+    setIsSubmitting(false);
     onOpenChange(false);
   };
 
@@ -129,9 +148,10 @@ export function SetGoalModal({ open, onOpenChange }: SetGoalModalProps) {
             onClick={handleSubmit}
             className="w-full h-12 rounded-2xl"
             variant="success"
+            disabled={isSubmitting}
           >
             <Sparkles className="w-4 h-4 mr-2" />
-            Create Goal
+            {isSubmitting ? "Creating..." : "Create Goal"}
           </Button>
         </div>
       </DialogContent>
