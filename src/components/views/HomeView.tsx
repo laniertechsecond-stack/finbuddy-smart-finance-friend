@@ -6,18 +6,22 @@ import { RecentTransactions } from "@/components/dashboard/RecentTransactions";
 import { LearningProgress } from "@/components/dashboard/LearningProgress";
 import { AddExpenseModal } from "@/components/modals/AddExpenseModal";
 import { SetGoalModal } from "@/components/modals/SetGoalModal";
+import { useBudget } from "@/hooks/useBudget";
 
 export function HomeView() {
   const [showAddExpense, setShowAddExpense] = useState(false);
   const [showSetGoal, setShowSetGoal] = useState(false);
+  const { totalBudget, totalSpent, remaining, loading, addTransaction, categories } = useBudget();
+
+  const percentUsed = totalBudget > 0 ? (totalSpent / totalBudget) * 100 : 0;
 
   return (
     <div className="space-y-6 pb-24">
       <BudgetOverview 
-        totalBudget={2000}
-        spent={1310}
-        remaining={690}
-        percentUsed={65.5}
+        totalBudget={totalBudget || 2000}
+        spent={totalSpent}
+        remaining={remaining || 2000}
+        percentUsed={percentUsed}
       />
       
       <QuickActions 
@@ -39,7 +43,9 @@ export function HomeView() {
 
       <AddExpenseModal 
         open={showAddExpense} 
-        onOpenChange={setShowAddExpense} 
+        onOpenChange={setShowAddExpense}
+        categories={categories}
+        onAddTransaction={addTransaction}
       />
       
       <SetGoalModal 
