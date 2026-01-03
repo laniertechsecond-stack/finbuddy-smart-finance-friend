@@ -1,5 +1,5 @@
+import { useState } from "react";
 import { 
-  User, 
   Settings, 
   Trophy, 
   Star, 
@@ -19,54 +19,71 @@ import { cn } from "@/lib/utils";
 import { Progress } from "@/components/ui/progress";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
+import { useBadges } from "@/hooks/useBadges";
 import { toast } from "sonner";
+import { AvatarPickerModal, getAvatarEmoji } from "@/components/modals/AvatarPickerModal";
 
-const badges = [
-  { id: "starter", name: "Starter", icon: Star, earned: true, color: "text-finbud-gold" },
-  { id: "saver", name: "Saver Pro", icon: Target, earned: true, color: "text-finbud-green" },
-  { id: "learner", name: "Quick Learner", icon: Zap, earned: true, color: "text-finbud-purple" },
-  { id: "streak", name: "5 Day Streak", icon: Flame, earned: true, color: "text-finbud-coral" },
-  { id: "ninja", name: "Budget Ninja", icon: Medal, earned: false, color: "text-muted-foreground" },
-  { id: "champ", name: "Savings Champ", icon: Trophy, earned: false, color: "text-muted-foreground" },
-];
+type SettingsPage = 'main' | 'notifications' | 'privacy' | 'help' | 'payment';
 
-const menuItems = [
-  { icon: CreditCard, label: "Payment Methods", href: "#" },
-  { icon: Bell, label: "Notifications", href: "#" },
-  { icon: Shield, label: "Privacy & Security", href: "#" },
-  { icon: HelpCircle, label: "Help Center", href: "#" },
-];
+interface ProfileViewProps {
+  onNavigateToGoals?: () => void;
+  onNavigateToBadges?: () => void;
+  onNavigateToSettings?: (page?: SettingsPage) => void;
+}
 
-export function ProfileView() {
+const badgeIcons: Record<string, any> = {
+  Star, Target, Zap, Flame, Medal, Trophy
+};
+
+export function ProfileView({ onNavigateToGoals, onNavigateToBadges, onNavigateToSettings }: ProfileViewProps) {
   const { user, signOut } = useAuth();
   const { profile } = useProfile();
+  const { badges, userBadges } = useBadges();
+  const [showAvatarPicker, setShowAvatarPicker] = useState(false);
   
   const userName = profile?.display_name || user?.email?.split('@')[0] || 'User';
   const level = profile?.level || 1;
   const currentXP = profile?.current_xp || 0;
-  const nextLevelXP = level * 150; // Each level requires more XP
+  const nextLevelXP = level * 150;
   const xpProgress = (currentXP / nextLevelXP) * 100;
   const totalPoints = profile?.total_points || 0;
   const streak = profile?.current_streak || 0;
+
+  const earnedBadgeIds = userBadges.map(ub => ub.badge_id);
+  const displayBadges = badges.slice(0, 6).map(badge => ({
+    ...badge,
+    earned: earnedBadgeIds.includes(badge.id),
+    Icon: badgeIcons[badge.icon] || Star
+  }));
 
   const handleSignOut = async () => {
     await signOut();
     toast.success("Signed out successfully");
   };
 
+  const menuItems = [
+    { icon: CreditCard, label: "Payment Methods", action: () => onNavigateToSettings?.('payment') },
+    { icon: Bell, label: "Notifications", action: () => onNavigateToSettings?.('notifications') },
+    { icon: Shield, label: "Privacy & Security", action: () => onNavigateToSettings?.('privacy') },
+    { icon: HelpCircle, label: "Help Center", action: () => onNavigateToSettings?.('help') },
+  ];
+
   return (
     <div className="space-y-6 pb-24">
       {/* Profile Header */}
       <div className="bg-card rounded-3xl p-6 shadow-finbud animate-slide-up">
         <div className="flex items-center gap-4 mb-6">
-          <div className="w-20 h-20 rounded-2xl gradient-hero flex items-center justify-center text-3xl font-bold text-primary-foreground shadow-glow">
-            {userName.charAt(0).toUpperCase()}
-          </div>
+          <button 
+            onClick={() => setShowAvatarPicker(true)}
+            className="w-20 h-20 rounded-2xl gradient-hero flex items-center justify-center text-3xl font-bold text-primary-foreground shadow-glow hover:scale-105 transition-transform"
+          >
+            {profile?.avatar_choice ? getAvatarEmoji(profile.avatar_choice) : userName.charAt(0).toUpperCase()}
+          </button>
           <div className="flex-1">
             <h1 className="text-2xl font-bold text-foreground">{userName}</h1>
             <p className="text-muted-foreground">{user?.email}</p>
           </div>
-          <Button variant="ghost" size="icon">
+          <Button variant="ghost" size="icon" onClick={() => onNavigateToSettings?.()}>
             <Settings className="w-5 h-5" />
           </Button>
         </div>
@@ -99,41 +116,50 @@ export function ProfileView() {
           <p className="text-2xl font-bold text-foreground">{streak}</p>
           <p className="text-xs text-muted-foreground">Day Streak</p>
         </div>
-        <div className="bg-finbud-purple-light rounded-2xl p-4 text-center">
-          <Trophy className="w-6 h-6 text-finbud-purple mx-auto mb-1" />
-          <p className="text-2xl font-bold text-foreground">{badges.filter(b => b.earned).length}</p>
-          <p className="text-xs text-muted-foreground">Badges</p>
-        </div>
+        <button 
+          onClick={onNavigateToGoals}
+          className="bg-finbud-purple-light rounded-2xl p-4 text-center hover:scale-105 transition-transform"
+        >
+          <Target className="w-6 h-6 text-finbud-purple mx-auto mb-1" />
+          <p className="text-2xl font-bold text-foreground">Goals</p>
+          <p className="text-xs text-muted-foreground">View All</p>
+        </button>
       </div>
 
       {/* Badges Section */}
       <div className="animate-slide-up" style={{ animationDelay: "0.2s" }}>
         <div className="flex items-center justify-between mb-3 px-1">
           <h3 className="font-semibold text-foreground">My Badges</h3>
-          <button className="text-sm font-medium text-primary">See All</button>
+          <button 
+            className="text-sm font-medium text-primary"
+            onClick={onNavigateToBadges}
+          >
+            See All
+          </button>
         </div>
         
         <div className="grid grid-cols-3 gap-3">
-          {badges.map((badge) => {
-            const Icon = badge.icon;
+          {displayBadges.map((badge) => {
+            const Icon = badge.Icon;
             return (
-              <div
+              <button
                 key={badge.id}
+                onClick={() => !badge.earned && toast.info(`🔓 ${badge.unlock_criteria}`)}
                 className={cn(
                   "bg-card rounded-2xl p-4 text-center transition-all",
                   badge.earned 
                     ? "shadow-sm hover:shadow-finbud" 
-                    : "opacity-40"
+                    : "opacity-40 hover:opacity-60"
                 )}
               >
                 <div className={cn(
                   "w-12 h-12 rounded-xl mx-auto mb-2 flex items-center justify-center",
                   badge.earned ? "bg-finbud-gold-light" : "bg-muted"
                 )}>
-                  <Icon className={cn("w-6 h-6", badge.color)} />
+                  <Icon className={cn("w-6 h-6", badge.earned ? "text-finbud-gold" : "text-muted-foreground")} />
                 </div>
                 <p className="text-xs font-medium text-foreground truncate">{badge.name}</p>
-              </div>
+              </button>
             );
           })}
         </div>
@@ -146,6 +172,7 @@ export function ProfileView() {
           return (
             <button
               key={item.label}
+              onClick={item.action}
               className={cn(
                 "w-full flex items-center gap-4 p-4 hover:bg-muted/50 transition-colors",
                 index !== menuItems.length - 1 && "border-b border-border"
@@ -170,6 +197,8 @@ export function ProfileView() {
         <LogOut className="w-4 h-4 mr-2" />
         Sign Out
       </Button>
+
+      <AvatarPickerModal open={showAvatarPicker} onOpenChange={setShowAvatarPicker} />
     </div>
   );
 }
