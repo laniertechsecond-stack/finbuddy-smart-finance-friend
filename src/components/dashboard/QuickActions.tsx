@@ -4,9 +4,11 @@ import { Button } from "@/components/ui/button";
 interface QuickActionsProps {
   onAddExpense: () => void;
   onSetGoal: () => void;
+  onViewCards?: () => void;
+  onSavings?: () => void;
 }
 
-export function QuickActions({ onAddExpense, onSetGoal }: QuickActionsProps) {
+export function QuickActions({ onAddExpense, onSetGoal, onViewCards, onSavings }: QuickActionsProps) {
   const actions = [
     { 
       icon: Plus, 
@@ -23,13 +25,13 @@ export function QuickActions({ onAddExpense, onSetGoal }: QuickActionsProps) {
     { 
       icon: CreditCard, 
       label: "View Cards", 
-      onClick: () => {},
+      onClick: onViewCards || (() => {}),
       className: "bg-finbud-purple text-primary-foreground" 
     },
     { 
       icon: PiggyBank, 
       label: "Savings", 
-      onClick: () => {},
+      onClick: onSavings || (() => {}),
       className: "bg-finbud-gold text-foreground" 
     },
   ];

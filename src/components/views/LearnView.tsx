@@ -1,4 +1,5 @@
 import { useState, useCallback } from "react";
+import ReactMarkdown from "react-markdown";
 import { 
   BookOpen, 
   Trophy, 
@@ -117,26 +118,19 @@ export function LearnView() {
           <h1 className="text-2xl font-bold text-foreground mb-4">{activeLesson.title}</h1>
           
           <div className="prose prose-sm dark:prose-invert max-w-none">
-            {activeLesson.content.split('\n').map((line, i) => {
-              if (line.startsWith('# ')) {
-                return <h1 key={i} className="text-xl font-bold mt-4 mb-2">{line.slice(2)}</h1>;
-              }
-              if (line.startsWith('## ')) {
-                return <h2 key={i} className="text-lg font-semibold mt-4 mb-2">{line.slice(3)}</h2>;
-              }
-              if (line.startsWith('### ')) {
-                return <h3 key={i} className="text-base font-semibold mt-3 mb-1">{line.slice(4)}</h3>;
-              }
-              if (line.startsWith('- ')) {
-                return <li key={i} className="ml-4">{line.slice(2).replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')}</li>;
-              }
-              if (line.trim() === '') {
-                return <br key={i} />;
-              }
-              return <p key={i} className="my-2" dangerouslySetInnerHTML={{ 
-                __html: line.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') 
-              }} />;
-            })}
+            <ReactMarkdown
+              components={{
+                h1: ({ children }) => <h1 className="text-xl font-bold mt-4 mb-2">{children}</h1>,
+                h2: ({ children }) => <h2 className="text-lg font-semibold mt-4 mb-2">{children}</h2>,
+                h3: ({ children }) => <h3 className="text-base font-semibold mt-3 mb-1">{children}</h3>,
+                p: ({ children }) => <p className="my-2">{children}</p>,
+                ul: ({ children }) => <ul className="list-disc ml-4 space-y-1">{children}</ul>,
+                li: ({ children }) => <li className="text-foreground">{children}</li>,
+                strong: ({ children }) => <span className="font-bold">{children}</span>,
+              }}
+            >
+              {activeLesson.content}
+            </ReactMarkdown>
           </div>
         </div>
 

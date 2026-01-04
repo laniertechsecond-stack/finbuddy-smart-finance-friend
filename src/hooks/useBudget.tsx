@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import type { Tables, TablesInsert } from '@/integrations/supabase/types';
@@ -12,7 +12,7 @@ export function useBudget() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
+  const fetchData = useCallback(async () => {
     if (!user) {
       setCategories([]);
       setTransactions([]);
@@ -20,19 +20,19 @@ export function useBudget() {
       return;
     }
 
-    const fetchData = async () => {
-      const [categoriesRes, transactionsRes] = await Promise.all([
-        supabase.from('budget_categories').select('*').eq('user_id', user.id),
-        supabase.from('transactions').select('*').eq('user_id', user.id).order('transaction_date', { ascending: false }).limit(10),
-      ]);
+    const [categoriesRes, transactionsRes] = await Promise.all([
+      supabase.from('budget_categories').select('*').eq('user_id', user.id),
+      supabase.from('transactions').select('*').eq('user_id', user.id).order('transaction_date', { ascending: false }),
+    ]);
 
-      if (categoriesRes.data) setCategories(categoriesRes.data);
-      if (transactionsRes.data) setTransactions(transactionsRes.data);
-      setLoading(false);
-    };
-
-    fetchData();
+    if (categoriesRes.data) setCategories(categoriesRes.data);
+    if (transactionsRes.data) setTransactions(transactionsRes.data);
+    setLoading(false);
   }, [user]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   const addTransaction = async (transaction: Omit<TablesInsert<'transactions'>, 'user_id'>) => {
     if (!user) return { error: new Error('No user') };
@@ -44,7 +44,7 @@ export function useBudget() {
       .single();
 
     if (data) {
-      setTransactions([data, ...transactions]);
+      setTransactions(prev => [data, ...prev]);
     }
 
     return { data, error };
@@ -60,7 +60,7 @@ export function useBudget() {
       .eq('user_id', user.id);
 
     if (!error) {
-      setCategories(categories.map(c => c.id === categoryId ? { ...c, ...updates } : c));
+      setCategories(prev => prev.map(c => c.id === categoryId ? { ...c, ...updates } : c));
     }
 
     return { error };
@@ -76,20 +76,20 @@ export function useBudget() {
       .single();
 
     if (data) {
-      setCategories([...categories, data]);
+      setCategories(prev => [...prev, data]);
     }
 
     return { data, error };
   };
 
   // Calculate totals
-  const totalBudget = categories.reduce((sum, cat) => sum + cat.budget_amount, 0);
+  const totalBudget = categories.reduce((sum, cat) => sum + Number(cat.budget_amount), 0);
   
   // Get spending per category from transactions this month
   const now = new Date();
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
   const monthlyTransactions = transactions.filter(t => t.transaction_date >= monthStart && t.type === 'expense');
-  const totalSpent = monthlyTransactions.reduce((sum, t) => sum + t.amount, 0);
+  const totalSpent = monthlyTransactions.reduce((sum, t) => sum + Number(t.amount), 0);
 
   return {
     categories,
@@ -98,6 +98,7 @@ export function useBudget() {
     addTransaction,
     updateCategory,
     addCategory,
+    refetch: fetchData,
     totalBudget,
     totalSpent,
     remaining: totalBudget - totalSpent,
