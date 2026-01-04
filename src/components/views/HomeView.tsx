@@ -13,9 +13,11 @@ import { useProfile } from "@/hooks/useProfile";
 
 interface HomeViewProps {
   onNavigateToLearn?: () => void;
+  onNavigateToGoals?: () => void;
+  onNavigateToSettings?: (page?: string) => void;
 }
 
-export function HomeView({ onNavigateToLearn }: HomeViewProps) {
+export function HomeView({ onNavigateToLearn, onNavigateToGoals, onNavigateToSettings }: HomeViewProps) {
   const [showAddExpense, setShowAddExpense] = useState(false);
   const [showSetGoal, setShowSetGoal] = useState(false);
   const [showAddCategory, setShowAddCategory] = useState(false);
@@ -38,6 +40,8 @@ export function HomeView({ onNavigateToLearn }: HomeViewProps) {
       <QuickActions 
         onAddExpense={() => setShowAddExpense(true)}
         onSetGoal={() => setShowSetGoal(true)}
+        onViewCards={() => onNavigateToSettings?.('payment')}
+        onSavings={onNavigateToGoals}
       />
       
       <LearningProgress 

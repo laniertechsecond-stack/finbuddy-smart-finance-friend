@@ -53,7 +53,13 @@ const Index = () => {
   const renderContent = () => {
     switch (activeTab) {
       case "home":
-        return <HomeView onNavigateToLearn={() => setActiveTab("learn")} />;
+        return (
+          <HomeView 
+            onNavigateToLearn={() => setActiveTab("learn")} 
+            onNavigateToGoals={() => setActiveTab("goals")}
+            onNavigateToSettings={(page) => navigateToSettings(page as SettingsPage || 'main')}
+          />
+        );
       case "budget":
         return <BudgetView />;
       case "learn":
@@ -75,7 +81,13 @@ const Index = () => {
       case "settings":
         return <SettingsView onBack={() => setActiveTab("profile")} initialPage={settingsPage} />;
       default:
-        return <HomeView onNavigateToLearn={() => setActiveTab("learn")} />;
+        return (
+          <HomeView 
+            onNavigateToLearn={() => setActiveTab("learn")} 
+            onNavigateToGoals={() => setActiveTab("goals")}
+            onNavigateToSettings={(page) => navigateToSettings(page as SettingsPage || 'main')}
+          />
+        );
     }
   };
 
