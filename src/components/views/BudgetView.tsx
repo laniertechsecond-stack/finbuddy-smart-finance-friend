@@ -40,7 +40,7 @@ const colorMap: Record<string, { text: string; bg: string }> = {
 };
 
 export function BudgetView() {
-  const [period, setPeriod] = useState<"week" | "month" | "semester">("month");
+  const [period, setPeriod] = useState<"week" | "month">("month");
   const [showAddCategory, setShowAddCategory] = useState(false);
   const { categories, transactions, loading, totalBudget, totalSpent } = useBudget();
   
@@ -49,22 +49,14 @@ export function BudgetView() {
   let startDate: Date;
   let daysRemaining: number;
   
-  switch (period) {
-    case 'week':
-      startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - now.getDay());
-      daysRemaining = 7 - now.getDay();
-      break;
-    case 'semester':
-      // Assuming semester is ~4 months
-      const semesterMonth = Math.floor(now.getMonth() / 4) * 4;
-      startDate = new Date(now.getFullYear(), semesterMonth, 1);
-      const semesterEnd = new Date(now.getFullYear(), semesterMonth + 4, 0);
-      daysRemaining = Math.ceil((semesterEnd.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-      break;
-    default: // month
-      startDate = new Date(now.getFullYear(), now.getMonth(), 1);
-      const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-      daysRemaining = monthEnd.getDate() - now.getDate();
+  if (period === 'week') {
+    startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - now.getDay());
+    daysRemaining = 7 - now.getDay();
+  } else {
+    // month
+    startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+    const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+    daysRemaining = monthEnd.getDate() - now.getDate();
   }
 
   const periodStart = startDate.toISOString().split('T')[0];
@@ -75,7 +67,7 @@ export function BudgetView() {
   const periodSpent = periodExpenses.reduce((sum, t) => sum + t.amount, 0);
   
   // Calculate budget multiplier for period
-  const periodMultiplier = period === 'week' ? 0.25 : period === 'semester' ? 4 : 1;
+  const periodMultiplier = period === 'week' ? 0.25 : 1;
   const periodBudget = totalBudget * periodMultiplier;
   const remaining = periodBudget - periodSpent;
 
@@ -102,7 +94,7 @@ export function BudgetView() {
     <div className="space-y-6 pb-24">
       {/* Period Selector */}
       <div className="flex items-center gap-2 bg-muted p-1 rounded-2xl">
-        {(["week", "month", "semester"] as const).map((p) => (
+        {(["week", "month"] as const).map((p) => (
           <button
             key={p}
             onClick={() => setPeriod(p)}

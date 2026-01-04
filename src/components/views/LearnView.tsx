@@ -91,11 +91,32 @@ export function LearnView() {
     }
   };
 
+  // Get daily challenge based on current date
+  const getDailyChallenge = () => {
+    const today = new Date();
+    const dayOfYear = Math.floor((today.getTime() - new Date(today.getFullYear(), 0, 0).getTime()) / (1000 * 60 * 60 * 24));
+    
+    // Get all incomplete lessons
+    const incompleteLessons = lessonContent.filter(lesson => !isLessonCompleted(lesson.id));
+    
+    if (incompleteLessons.length === 0) {
+      return null;
+    }
+    
+    // Use day of year to select a consistent daily challenge
+    const index = dayOfYear % incompleteLessons.length;
+    const lesson = incompleteLessons[index];
+    const module = modules.find(m => m.id === lesson.module_id);
+    
+    return { lesson, module };
+  };
+
+  const dailyChallenge = getDailyChallenge();
+
   const handleDailyChallenge = () => {
-    const next = getNextLesson();
-    if (next) {
-      setSelectedModuleId(next.module.id);
-      setTimeout(() => handleStartLesson(next.lesson.id), 100);
+    if (dailyChallenge) {
+      setSelectedModuleId(dailyChallenge.module?.id || null);
+      setTimeout(() => handleStartLesson(dailyChallenge.lesson.id), 100);
     } else {
       toast.info("You've completed all available lessons!");
     }
@@ -337,9 +358,18 @@ export function LearnView() {
           </div>
           <div className="flex-1">
             <h3 className="font-bold text-foreground">Daily Challenge</h3>
-            <p className="text-sm text-muted-foreground">Complete 1 lesson to maintain your streak!</p>
+            <p className="text-sm text-muted-foreground">
+              {dailyChallenge 
+                ? `Complete: ${dailyChallenge.lesson.title}` 
+                : "All challenges complete!"}
+            </p>
           </div>
-          <Button variant="gold" size="sm" className="rounded-xl">
+          <Button 
+            variant="gold" 
+            size="sm" 
+            className="rounded-xl"
+            disabled={!dailyChallenge}
+          >
             Go
           </Button>
         </div>

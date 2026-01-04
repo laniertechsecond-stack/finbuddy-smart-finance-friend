@@ -9,7 +9,6 @@ import { SetGoalModal } from "@/components/modals/SetGoalModal";
 import { AddCategoryModal } from "@/components/modals/AddCategoryModal";
 import { useBudget } from "@/hooks/useBudget";
 import { useLearning } from "@/hooks/useLearning";
-import { useProfile } from "@/hooks/useProfile";
 
 interface HomeViewProps {
   onNavigateToLearn?: () => void;
@@ -23,7 +22,6 @@ export function HomeView({ onNavigateToLearn, onNavigateToGoals, onNavigateToSet
   const [showAddCategory, setShowAddCategory] = useState(false);
   const { totalBudget, totalSpent, remaining, loading, addTransaction, categories } = useBudget();
   const { totalCompletedLessons, totalLessons, getNextLesson } = useLearning();
-  const { profile } = useProfile();
 
   const percentUsed = totalBudget > 0 ? (totalSpent / totalBudget) * 100 : 0;
   const nextLesson = getNextLesson();
@@ -40,14 +38,11 @@ export function HomeView({ onNavigateToLearn, onNavigateToGoals, onNavigateToSet
       <QuickActions 
         onAddExpense={() => setShowAddExpense(true)}
         onSetGoal={() => setShowSetGoal(true)}
-        onViewCards={() => onNavigateToSettings?.('payment')}
-        onSavings={onNavigateToGoals}
       />
       
       <LearningProgress 
         completedLessons={totalCompletedLessons}
         totalLessons={totalLessons}
-        currentStreak={profile?.current_streak || 0}
         nextLesson={nextLesson?.lesson.title || "All lessons complete!"}
         onStartLesson={onNavigateToLearn || (() => {})}
       />

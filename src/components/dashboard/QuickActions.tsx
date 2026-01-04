@@ -1,14 +1,11 @@
-import { Plus, Target, CreditCard, PiggyBank } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Plus, Target } from "lucide-react";
 
 interface QuickActionsProps {
   onAddExpense: () => void;
   onSetGoal: () => void;
-  onViewCards?: () => void;
-  onSavings?: () => void;
 }
 
-export function QuickActions({ onAddExpense, onSetGoal, onViewCards, onSavings }: QuickActionsProps) {
+export function QuickActions({ onAddExpense, onSetGoal }: QuickActionsProps) {
   const actions = [
     { 
       icon: Plus, 
@@ -22,24 +19,12 @@ export function QuickActions({ onAddExpense, onSetGoal, onViewCards, onSavings }
       onClick: onSetGoal,
       className: "bg-finbud-green text-primary-foreground" 
     },
-    { 
-      icon: CreditCard, 
-      label: "View Cards", 
-      onClick: onViewCards || (() => {}),
-      className: "bg-finbud-purple text-primary-foreground" 
-    },
-    { 
-      icon: PiggyBank, 
-      label: "Savings", 
-      onClick: onSavings || (() => {}),
-      className: "bg-finbud-gold text-foreground" 
-    },
   ];
   
   return (
     <div className="animate-slide-up" style={{ animationDelay: "0.1s" }}>
       <h3 className="text-sm font-semibold text-muted-foreground mb-3 px-1">Quick Actions</h3>
-      <div className="grid grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 gap-3">
         {actions.map((action) => {
           const Icon = action.icon;
           return (
