@@ -1,10 +1,9 @@
-import { BookOpen, Trophy, Star, ChevronRight } from "lucide-react";
+import { BookOpen, Star, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface LearningProgressProps {
   completedLessons: number;
   totalLessons: number;
-  currentStreak: number;
   nextLesson: string;
   onStartLesson: () => void;
 }
@@ -12,7 +11,6 @@ interface LearningProgressProps {
 export function LearningProgress({ 
   completedLessons, 
   totalLessons, 
-  currentStreak, 
   nextLesson,
   onStartLesson 
 }: LearningProgressProps) {
@@ -29,10 +27,6 @@ export function LearningProgress({
             <h3 className="font-semibold text-foreground">Learning Journey</h3>
             <p className="text-sm text-muted-foreground">{completedLessons} of {totalLessons} lessons</p>
           </div>
-        </div>
-        <div className="flex items-center gap-1 bg-finbud-gold-light px-3 py-1.5 rounded-full">
-          <Trophy className="w-4 h-4 text-finbud-gold" />
-          <span className="text-sm font-semibold text-foreground">{currentStreak} day streak</span>
         </div>
       </div>
       

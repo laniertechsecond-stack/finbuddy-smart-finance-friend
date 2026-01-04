@@ -195,12 +195,15 @@ export type Database = {
         Row: {
           avatar_choice: string | null
           avatar_url: string | null
+          birthday: string | null
           created_at: string
           current_streak: number | null
           current_xp: number | null
           display_name: string | null
+          has_completed_onboarding: boolean | null
           id: string
           level: number | null
+          monthly_income: number | null
           total_points: number | null
           updated_at: string
           user_id: string
@@ -208,12 +211,15 @@ export type Database = {
         Insert: {
           avatar_choice?: string | null
           avatar_url?: string | null
+          birthday?: string | null
           created_at?: string
           current_streak?: number | null
           current_xp?: number | null
           display_name?: string | null
+          has_completed_onboarding?: boolean | null
           id?: string
           level?: number | null
+          monthly_income?: number | null
           total_points?: number | null
           updated_at?: string
           user_id: string
@@ -221,12 +227,15 @@ export type Database = {
         Update: {
           avatar_choice?: string | null
           avatar_url?: string | null
+          birthday?: string | null
           created_at?: string
           current_streak?: number | null
           current_xp?: number | null
           display_name?: string | null
+          has_completed_onboarding?: boolean | null
           id?: string
           level?: number | null
+          monthly_income?: number | null
           total_points?: number | null
           updated_at?: string
           user_id?: string

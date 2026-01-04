@@ -3,9 +3,7 @@ import {
   Settings, 
   Trophy, 
   Star, 
-  Flame,
   ChevronRight,
-  CreditCard,
   Bell,
   Shield,
   HelpCircle,
@@ -23,7 +21,7 @@ import { useBadges } from "@/hooks/useBadges";
 import { toast } from "sonner";
 import { AvatarPickerModal, getAvatarEmoji } from "@/components/modals/AvatarPickerModal";
 
-type SettingsPage = 'main' | 'notifications' | 'privacy' | 'help' | 'payment';
+type SettingsPage = 'main' | 'notifications' | 'privacy' | 'help' | 'profile';
 
 interface ProfileViewProps {
   onNavigateToGoals?: () => void;
@@ -32,7 +30,7 @@ interface ProfileViewProps {
 }
 
 const badgeIcons: Record<string, any> = {
-  Star, Target, Zap, Flame, Medal, Trophy
+  Star, Target, Zap, Medal, Trophy
 };
 
 export function ProfileView({ onNavigateToGoals, onNavigateToBadges, onNavigateToSettings }: ProfileViewProps) {
@@ -47,7 +45,6 @@ export function ProfileView({ onNavigateToGoals, onNavigateToBadges, onNavigateT
   const nextLevelXP = level * 150;
   const xpProgress = (currentXP / nextLevelXP) * 100;
   const totalPoints = profile?.total_points || 0;
-  const streak = profile?.current_streak || 0;
 
   const earnedBadgeIds = userBadges.map(ub => ub.badge_id);
   const displayBadges = badges.slice(0, 6).map(badge => ({
@@ -62,7 +59,7 @@ export function ProfileView({ onNavigateToGoals, onNavigateToBadges, onNavigateT
   };
 
   const menuItems = [
-    { icon: CreditCard, label: "Payment Methods", action: () => onNavigateToSettings?.('payment') },
+    { icon: Settings, label: "Edit Profile", action: () => onNavigateToSettings?.('profile' as any) },
     { icon: Bell, label: "Notifications", action: () => onNavigateToSettings?.('notifications') },
     { icon: Shield, label: "Privacy & Security", action: () => onNavigateToSettings?.('privacy') },
     { icon: HelpCircle, label: "Help Center", action: () => onNavigateToSettings?.('help') },
@@ -105,16 +102,11 @@ export function ProfileView({ onNavigateToGoals, onNavigateToBadges, onNavigateT
       </div>
 
       {/* Stats Row */}
-      <div className="grid grid-cols-3 gap-3 animate-slide-up" style={{ animationDelay: "0.1s" }}>
+      <div className="grid grid-cols-2 gap-3 animate-slide-up" style={{ animationDelay: "0.1s" }}>
         <div className="bg-finbud-gold-light rounded-2xl p-4 text-center">
           <Star className="w-6 h-6 text-finbud-gold mx-auto mb-1" />
           <p className="text-2xl font-bold text-foreground">{totalPoints}</p>
           <p className="text-xs text-muted-foreground">Points</p>
-        </div>
-        <div className="bg-finbud-coral-light rounded-2xl p-4 text-center">
-          <Flame className="w-6 h-6 text-finbud-coral mx-auto mb-1" />
-          <p className="text-2xl font-bold text-foreground">{streak}</p>
-          <p className="text-xs text-muted-foreground">Day Streak</p>
         </div>
         <button 
           onClick={onNavigateToGoals}
