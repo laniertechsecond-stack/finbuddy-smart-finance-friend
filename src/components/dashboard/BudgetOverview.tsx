@@ -1,5 +1,6 @@
 import { TrendingDown, TrendingUp, DollarSign } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { format } from "date-fns";
 
 interface BudgetOverviewProps {
   totalBudget: number;
@@ -11,12 +12,14 @@ interface BudgetOverviewProps {
 export function BudgetOverview({ totalBudget, spent, remaining, percentUsed }: BudgetOverviewProps) {
   const isOverBudget = percentUsed > 100;
   const isWarning = percentUsed > 80 && percentUsed <= 100;
+  const today = new Date();
+  const monthYear = format(today, 'MMMM yyyy');
   
   return (
     <div className="bg-card rounded-3xl p-6 shadow-finbud animate-slide-up">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-lg font-semibold text-foreground">This Month</h2>
-        <span className="text-sm text-muted-foreground">Oct 2024</span>
+        <span className="text-sm text-muted-foreground">{monthYear}</span>
       </div>
       
       {/* Main Amount Display */}

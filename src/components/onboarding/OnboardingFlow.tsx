@@ -42,7 +42,7 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
   const [selectedAvatar, setSelectedAvatar] = useState('fox');
   const [displayName, setDisplayName] = useState('');
   const [birthday, setBirthday] = useState('');
-  const [monthlyIncome, setMonthlyIncome] = useState(2000);
+  const [monthlyIncome, setMonthlyIncome] = useState(0);
   const [categoryBudgets, setCategoryBudgets] = useState(
     defaultCategories.map(cat => ({
       ...cat,
@@ -227,14 +227,14 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
             <Slider
               value={[monthlyIncome]}
               onValueChange={([value]) => handleIncomeChange(value)}
-              min={500}
+              min={0}
               max={10000}
               step={100}
               className="my-6"
             />
 
             <div className="flex justify-between text-sm text-muted-foreground">
-              <span>$500</span>
+              <span>$0</span>
               <span>$10,000</span>
             </div>
 
