@@ -27,23 +27,20 @@ interface ProfileViewProps {
   onNavigateToGoals?: () => void;
   onNavigateToBadges?: () => void;
   onNavigateToSettings?: (page?: SettingsPage) => void;
+  onNavigateToShop?: () => void;
 }
 
 const badgeIcons: Record<string, any> = {
   Star, Target, Zap, Medal, Trophy
 };
 
-export function ProfileView({ onNavigateToGoals, onNavigateToBadges, onNavigateToSettings }: ProfileViewProps) {
+export function ProfileView({ onNavigateToGoals, onNavigateToBadges, onNavigateToSettings, onNavigateToShop }: ProfileViewProps) {
   const { user, signOut } = useAuth();
   const { profile } = useProfile();
   const { badges, userBadges } = useBadges();
   const [showAvatarPicker, setShowAvatarPicker] = useState(false);
   
   const userName = profile?.display_name || user?.email?.split('@')[0] || 'User';
-  const level = profile?.level || 1;
-  const currentXP = profile?.current_xp || 0;
-  const nextLevelXP = level * 150;
-  const xpProgress = (currentXP / nextLevelXP) * 100;
   const totalPoints = profile?.total_points || 0;
 
   const earnedBadgeIds = userBadges.map(ub => ub.badge_id);
@@ -84,30 +81,18 @@ export function ProfileView({ onNavigateToGoals, onNavigateToBadges, onNavigateT
             <Settings className="w-5 h-5" />
           </Button>
         </div>
-
-        {/* Level Progress */}
-        <div className="bg-muted rounded-2xl p-4">
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-finbud-gold flex items-center justify-center">
-                <span className="text-sm font-bold text-foreground">{level}</span>
-              </div>
-              <span className="font-semibold text-foreground">Level {level}</span>
-            </div>
-            <span className="text-sm text-muted-foreground">{currentXP}/{nextLevelXP} XP</span>
-          </div>
-          <Progress value={xpProgress} className="h-2" />
-          <p className="text-xs text-muted-foreground mt-2">{nextLevelXP - currentXP} XP to Level {level + 1}</p>
-        </div>
       </div>
 
       {/* Stats Row */}
-      <div className="grid grid-cols-2 gap-3 animate-slide-up" style={{ animationDelay: "0.1s" }}>
-        <div className="bg-finbud-gold-light rounded-2xl p-4 text-center">
+      <div className="grid grid-cols-3 gap-3 animate-slide-up" style={{ animationDelay: "0.1s" }}>
+        <button 
+          onClick={onNavigateToShop}
+          className="bg-finbud-gold-light rounded-2xl p-4 text-center hover:scale-105 transition-transform"
+        >
           <Star className="w-6 h-6 text-finbud-gold mx-auto mb-1" />
           <p className="text-2xl font-bold text-foreground">{totalPoints}</p>
-          <p className="text-xs text-muted-foreground">Points</p>
-        </div>
+          <p className="text-xs text-muted-foreground">Tokens</p>
+        </button>
         <button 
           onClick={onNavigateToGoals}
           className="bg-finbud-purple-light rounded-2xl p-4 text-center hover:scale-105 transition-transform"
@@ -115,6 +100,14 @@ export function ProfileView({ onNavigateToGoals, onNavigateToBadges, onNavigateT
           <Target className="w-6 h-6 text-finbud-purple mx-auto mb-1" />
           <p className="text-2xl font-bold text-foreground">Goals</p>
           <p className="text-xs text-muted-foreground">View All</p>
+        </button>
+        <button 
+          onClick={onNavigateToShop}
+          className="bg-finbud-green-light rounded-2xl p-4 text-center hover:scale-105 transition-transform"
+        >
+          <Zap className="w-6 h-6 text-finbud-green mx-auto mb-1" />
+          <p className="text-lg font-bold text-foreground">Shop</p>
+          <p className="text-xs text-muted-foreground">Spend Tokens</p>
         </button>
       </div>
 

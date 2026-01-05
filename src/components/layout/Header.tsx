@@ -1,15 +1,33 @@
-import { Coins } from "lucide-react";
+import { Coins, Wallet } from "lucide-react";
 import { getAvatarEmoji } from "@/components/modals/AvatarPickerModal";
+import { format } from "date-fns";
 
 interface HeaderProps {
   userName: string;
   points: number;
   avatarChoice?: string | null;
+  onLogoClick?: () => void;
 }
 
-export function Header({ userName, points, avatarChoice }: HeaderProps) {
+export function Header({ userName, points, avatarChoice, onLogoClick }: HeaderProps) {
+  const today = new Date();
+  const formattedDate = format(today, 'EEEE, MMMM d, yyyy');
+
   return (
     <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-lg border-b border-border/50">
+      {/* Center Logo */}
+      <div className="flex justify-center py-2 border-b border-border/30">
+        <button 
+          onClick={onLogoClick}
+          className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+        >
+          <div className="w-8 h-8 rounded-xl gradient-hero flex items-center justify-center shadow-finbud">
+            <Wallet className="w-4 h-4 text-primary-foreground" />
+          </div>
+          <span className="text-xl font-bold text-foreground">FinBud</span>
+        </button>
+      </div>
+      
       <div className="max-w-lg mx-auto px-4 py-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -30,6 +48,9 @@ export function Header({ userName, points, avatarChoice }: HeaderProps) {
             </div>
           </div>
         </div>
+        
+        {/* Date display */}
+        <p className="text-xs text-muted-foreground mt-2 text-center">{formattedDate}</p>
       </div>
     </header>
   );

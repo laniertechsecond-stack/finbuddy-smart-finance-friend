@@ -10,11 +10,12 @@ import { ProfileView } from "@/components/views/ProfileView";
 import { GoalsView } from "@/components/views/GoalsView";
 import { BadgesView } from "@/components/views/BadgesView";
 import { SettingsView } from "@/components/views/SettingsView";
+import { ShopView } from "@/components/views/ShopView";
 import { OnboardingFlow } from "@/components/onboarding/OnboardingFlow";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
 
-type TabType = "home" | "budget" | "learn" | "chat" | "profile" | "goals" | "badges" | "settings";
+type TabType = "home" | "budget" | "learn" | "chat" | "profile" | "goals" | "badges" | "settings" | "shop";
 type SettingsPage = 'main' | 'notifications' | 'privacy' | 'help' | 'profile';
 
 const Index = () => {
@@ -83,6 +84,7 @@ const Index = () => {
             onNavigateToGoals={() => setActiveTab("goals")}
             onNavigateToBadges={() => setActiveTab("badges")}
             onNavigateToSettings={navigateToSettings}
+            onNavigateToShop={() => setActiveTab("shop")}
           />
         );
       case "goals":
@@ -91,6 +93,8 @@ const Index = () => {
         return <BadgesView onBack={() => setActiveTab("profile")} />;
       case "settings":
         return <SettingsView onBack={() => setActiveTab("profile")} initialPage={settingsPage} />;
+      case "shop":
+        return <ShopView onBack={() => setActiveTab("profile")} />;
       default:
         return (
           <HomeView 
@@ -102,7 +106,7 @@ const Index = () => {
     }
   };
 
-  const showHeader = !["badges", "settings", "goals"].includes(activeTab);
+  const showHeader = !["badges", "settings", "goals", "shop"].includes(activeTab);
 
   return (
     <div className="min-h-screen bg-background">
@@ -111,6 +115,7 @@ const Index = () => {
           userName={userName} 
           points={points} 
           avatarChoice={profile?.avatar_choice}
+          onLogoClick={() => setActiveTab("home")}
         />
       )}
       
@@ -119,7 +124,7 @@ const Index = () => {
       </main>
       
       <BottomNav 
-        activeTab={["goals", "badges", "settings"].includes(activeTab) ? "profile" : activeTab} 
+        activeTab={["goals", "badges", "settings", "shop"].includes(activeTab) ? "profile" : activeTab} 
         onTabChange={(tab) => setActiveTab(tab as TabType)} 
       />
     </div>

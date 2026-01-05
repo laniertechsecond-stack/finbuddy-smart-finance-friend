@@ -165,13 +165,13 @@ export function SettingsView({ onBack, initialPage = 'main' }: SettingsViewProps
             <Slider
               value={[monthlyIncome]}
               onValueChange={([value]) => setMonthlyIncome(value)}
-              min={500}
+              min={0}
               max={10000}
               step={100}
               className="mt-4"
             />
             <div className="flex justify-between text-xs text-muted-foreground mt-1">
-              <span>$500</span>
+              <span>$0</span>
               <span>$10,000</span>
             </div>
           </div>
