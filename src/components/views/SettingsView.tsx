@@ -1,7 +1,8 @@
 import { useState } from "react";
+import { useTheme } from "next-themes";
 import { ArrowLeft, Shield, HelpCircle, ChevronRight, User, Download, Trash2, Mail, Key } from "lucide-react";
 import { Button } from "@/components/ui/button";
-
+import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
@@ -23,12 +24,16 @@ interface SettingsViewProps {
 export function SettingsView({ onBack, initialPage = 'main' }: SettingsViewProps) {
   const { profile, updateProfile } = useProfile();
   const { user } = useAuth();
+  const { resolvedTheme, setTheme } = useTheme();
   const [currentPage, setCurrentPage] = useState<SettingsPage>(initialPage);
   const [showAvatarPicker, setShowAvatarPicker] = useState(false);
   const [showChangePassword, setShowChangePassword] = useState(false);
   const [showExportData, setShowExportData] = useState(false);
   const [showDeleteAccount, setShowDeleteAccount] = useState(false);
-  
+
+  const isDarkMode = resolvedTheme === 'dark';
+  const toggleDarkMode = (enabled: boolean) => setTheme(enabled ? 'dark' : 'light');
+
   // Profile editing state
   const [displayName, setDisplayName] = useState(profile?.display_name || '');
   const [birthday, setBirthday] = useState(profile?.birthday || '');
@@ -358,6 +363,14 @@ export function SettingsView({ onBack, initialPage = 'main' }: SettingsViewProps
           <ArrowLeft className="w-5 h-5" />
         </Button>
         <h2 className="text-2xl font-bold text-foreground">Settings</h2>
+      </div>
+
+      <div className="bg-card rounded-3xl p-4 shadow-sm flex items-center justify-between">
+        <div>
+          <p className="font-medium text-foreground">Dark mode</p>
+          <p className="text-sm text-muted-foreground">Switch the app theme</p>
+        </div>
+        <Switch checked={isDarkMode} onCheckedChange={toggleDarkMode} />
       </div>
 
       <div className="bg-card rounded-3xl shadow-sm overflow-hidden">

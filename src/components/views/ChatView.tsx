@@ -121,7 +121,7 @@ export function ChatView() {
   }, [messages, botType, isTyping]);
 
   return (
-    <div className="flex flex-col h-[calc(100vh-180px)]">
+    <div className="flex flex-col h-[calc(100vh-180px)] pb-24">
       {/* Bot Selector */}
       <div className="flex gap-3 p-1 bg-muted rounded-2xl mb-4">
         <button
@@ -237,7 +237,6 @@ export function ChatView() {
           onKeyDown={(e) => e.key === "Enter" && handleSend(input)}
           placeholder={`Ask ${botType === "budget" ? "BudgetBot" : "LearnBot"}...`}
           className="h-12 rounded-2xl border-2 focus:border-primary bg-card"
-          disabled={isTyping}
         />
         <Button
           onClick={() => handleSend(input)}
