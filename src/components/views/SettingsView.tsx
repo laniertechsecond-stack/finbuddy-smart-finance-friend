@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { ArrowLeft, Bell, Shield, HelpCircle, ChevronRight, User, Lock, Download, Trash2, Mail, Key } from "lucide-react";
+import { ArrowLeft, Shield, HelpCircle, ChevronRight, User, Download, Trash2, Mail, Key } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
+
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
@@ -13,7 +13,7 @@ import { AvatarPickerModal, getAvatarEmoji } from "@/components/modals/AvatarPic
 import { Slider } from "@/components/ui/slider";
 import { supabase } from "@/integrations/supabase/client";
 
-type SettingsPage = 'main' | 'notifications' | 'privacy' | 'help' | 'profile';
+type SettingsPage = 'main' | 'privacy' | 'help' | 'profile';
 
 interface SettingsViewProps {
   onBack: () => void;
@@ -24,13 +24,6 @@ export function SettingsView({ onBack, initialPage = 'main' }: SettingsViewProps
   const { profile, updateProfile } = useProfile();
   const { user } = useAuth();
   const [currentPage, setCurrentPage] = useState<SettingsPage>(initialPage);
-  const [notificationSettings, setNotificationSettings] = useState({
-    pushEnabled: true,
-    emailEnabled: true,
-    weeklyDigest: true,
-    budgetAlerts: true,
-    learningReminders: true,
-  });
   const [showAvatarPicker, setShowAvatarPicker] = useState(false);
   const [showChangePassword, setShowChangePassword] = useState(false);
   const [showExportData, setShowExportData] = useState(false);
@@ -186,41 +179,6 @@ export function SettingsView({ onBack, initialPage = 'main' }: SettingsViewProps
     );
   }
 
-  if (currentPage === 'notifications') {
-    return (
-      <div className="space-y-6 pb-24">
-        <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={handleBack}>
-            <ArrowLeft className="w-5 h-5" />
-          </Button>
-          <h2 className="text-2xl font-bold text-foreground">Notifications</h2>
-        </div>
-
-        <div className="bg-card rounded-3xl p-4 shadow-sm space-y-4">
-          {[
-            { key: 'pushEnabled', label: 'Push Notifications', desc: 'Receive push notifications' },
-            { key: 'emailEnabled', label: 'Email Notifications', desc: 'Receive email updates' },
-            { key: 'weeklyDigest', label: 'Weekly Digest', desc: 'Get a weekly summary email' },
-            { key: 'budgetAlerts', label: 'Budget Alerts', desc: 'Notify when approaching limits' },
-            { key: 'learningReminders', label: 'Learning Reminders', desc: 'Daily lesson reminders' },
-          ].map((item) => (
-            <div key={item.key} className="flex items-center justify-between py-2">
-              <div>
-                <p className="font-medium text-foreground">{item.label}</p>
-                <p className="text-sm text-muted-foreground">{item.desc}</p>
-              </div>
-              <Switch
-                checked={notificationSettings[item.key as keyof typeof notificationSettings]}
-                onCheckedChange={(checked) =>
-                  setNotificationSettings(prev => ({ ...prev, [item.key]: checked }))
-                }
-              />
-            </div>
-          ))}
-        </div>
-      </div>
-    );
-  }
 
   if (currentPage === 'privacy') {
     return (
@@ -405,7 +363,6 @@ export function SettingsView({ onBack, initialPage = 'main' }: SettingsViewProps
       <div className="bg-card rounded-3xl shadow-sm overflow-hidden">
         {[
           { icon: User, label: 'Edit Profile', page: 'profile' as SettingsPage },
-          { icon: Bell, label: 'Notifications', page: 'notifications' as SettingsPage },
           { icon: Shield, label: 'Privacy & Security', page: 'privacy' as SettingsPage },
           { icon: HelpCircle, label: 'Help Center', page: 'help' as SettingsPage },
         ].map((item, index) => {
@@ -416,7 +373,7 @@ export function SettingsView({ onBack, initialPage = 'main' }: SettingsViewProps
               onClick={() => setCurrentPage(item.page)}
               className={cn(
                 "w-full flex items-center gap-4 p-4 hover:bg-muted/50 transition-colors",
-                index !== 3 && "border-b border-border"
+                index !== 2 && "border-b border-border"
               )}
             >
               <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center">

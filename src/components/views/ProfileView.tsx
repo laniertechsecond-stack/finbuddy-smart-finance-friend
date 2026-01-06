@@ -1,54 +1,32 @@
 import { useState } from "react";
 import { 
   Settings, 
-  Trophy, 
-  Star, 
   ChevronRight,
-  Bell,
   Shield,
   HelpCircle,
   LogOut,
-  Medal,
   Target,
-  Zap
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { Progress } from "@/components/ui/progress";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
-import { useBadges } from "@/hooks/useBadges";
 import { toast } from "sonner";
 import { AvatarPickerModal, getAvatarEmoji } from "@/components/modals/AvatarPickerModal";
 
-type SettingsPage = 'main' | 'notifications' | 'privacy' | 'help' | 'profile';
+type SettingsPage = 'main' | 'privacy' | 'help' | 'profile';
 
 interface ProfileViewProps {
   onNavigateToGoals?: () => void;
-  onNavigateToBadges?: () => void;
   onNavigateToSettings?: (page?: SettingsPage) => void;
-  onNavigateToShop?: () => void;
 }
 
-const badgeIcons: Record<string, any> = {
-  Star, Target, Zap, Medal, Trophy
-};
-
-export function ProfileView({ onNavigateToGoals, onNavigateToBadges, onNavigateToSettings, onNavigateToShop }: ProfileViewProps) {
+export function ProfileView({ onNavigateToGoals, onNavigateToSettings }: ProfileViewProps) {
   const { user, signOut } = useAuth();
   const { profile } = useProfile();
-  const { badges, userBadges } = useBadges();
   const [showAvatarPicker, setShowAvatarPicker] = useState(false);
   
   const userName = profile?.display_name || user?.email?.split('@')[0] || 'User';
-  const totalPoints = profile?.total_points || 0;
-
-  const earnedBadgeIds = userBadges.map(ub => ub.badge_id);
-  const displayBadges = badges.slice(0, 6).map(badge => ({
-    ...badge,
-    earned: earnedBadgeIds.includes(badge.id),
-    Icon: badgeIcons[badge.icon] || Star
-  }));
 
   const handleSignOut = async () => {
     await signOut();
@@ -57,7 +35,6 @@ export function ProfileView({ onNavigateToGoals, onNavigateToBadges, onNavigateT
 
   const menuItems = [
     { icon: Settings, label: "Edit Profile", action: () => onNavigateToSettings?.('profile' as any) },
-    { icon: Bell, label: "Notifications", action: () => onNavigateToSettings?.('notifications') },
     { icon: Shield, label: "Privacy & Security", action: () => onNavigateToSettings?.('privacy') },
     { icon: HelpCircle, label: "Help Center", action: () => onNavigateToSettings?.('help') },
   ];
@@ -84,15 +61,7 @@ export function ProfileView({ onNavigateToGoals, onNavigateToBadges, onNavigateT
       </div>
 
       {/* Stats Row */}
-      <div className="grid grid-cols-3 gap-3 animate-slide-up" style={{ animationDelay: "0.1s" }}>
-        <button 
-          onClick={onNavigateToShop}
-          className="bg-finbud-gold-light rounded-2xl p-4 text-center hover:scale-105 transition-transform"
-        >
-          <Star className="w-6 h-6 text-finbud-gold mx-auto mb-1" />
-          <p className="text-2xl font-bold text-foreground">{totalPoints}</p>
-          <p className="text-xs text-muted-foreground">Tokens</p>
-        </button>
+      <div className="grid grid-cols-2 gap-3 animate-slide-up" style={{ animationDelay: "0.1s" }}>
         <button 
           onClick={onNavigateToGoals}
           className="bg-finbud-purple-light rounded-2xl p-4 text-center hover:scale-105 transition-transform"
@@ -102,56 +71,17 @@ export function ProfileView({ onNavigateToGoals, onNavigateToBadges, onNavigateT
           <p className="text-xs text-muted-foreground">View All</p>
         </button>
         <button 
-          onClick={onNavigateToShop}
+          onClick={() => onNavigateToSettings?.('profile')}
           className="bg-finbud-green-light rounded-2xl p-4 text-center hover:scale-105 transition-transform"
         >
-          <Zap className="w-6 h-6 text-finbud-green mx-auto mb-1" />
-          <p className="text-lg font-bold text-foreground">Shop</p>
-          <p className="text-xs text-muted-foreground">Spend Tokens</p>
+          <Settings className="w-6 h-6 text-finbud-green mx-auto mb-1" />
+          <p className="text-lg font-bold text-foreground">Settings</p>
+          <p className="text-xs text-muted-foreground">Manage</p>
         </button>
       </div>
 
-      {/* Badges Section */}
-      <div className="animate-slide-up" style={{ animationDelay: "0.2s" }}>
-        <div className="flex items-center justify-between mb-3 px-1">
-          <h3 className="font-semibold text-foreground">My Badges</h3>
-          <button 
-            className="text-sm font-medium text-primary"
-            onClick={onNavigateToBadges}
-          >
-            See All
-          </button>
-        </div>
-        
-        <div className="grid grid-cols-3 gap-3">
-          {displayBadges.map((badge) => {
-            const Icon = badge.Icon;
-            return (
-              <button
-                key={badge.id}
-                onClick={() => !badge.earned && toast.info(`🔓 ${badge.unlock_criteria}`)}
-                className={cn(
-                  "bg-card rounded-2xl p-4 text-center transition-all",
-                  badge.earned 
-                    ? "shadow-sm hover:shadow-finbud" 
-                    : "opacity-40 hover:opacity-60"
-                )}
-              >
-                <div className={cn(
-                  "w-12 h-12 rounded-xl mx-auto mb-2 flex items-center justify-center",
-                  badge.earned ? "bg-finbud-gold-light" : "bg-muted"
-                )}>
-                  <Icon className={cn("w-6 h-6", badge.earned ? "text-finbud-gold" : "text-muted-foreground")} />
-                </div>
-                <p className="text-xs font-medium text-foreground truncate">{badge.name}</p>
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
       {/* Menu Items */}
-      <div className="bg-card rounded-3xl shadow-sm overflow-hidden animate-slide-up" style={{ animationDelay: "0.3s" }}>
+      <div className="bg-card rounded-3xl shadow-sm overflow-hidden animate-slide-up" style={{ animationDelay: "0.2s" }}>
         {menuItems.map((item, index) => {
           const Icon = item.icon;
           return (

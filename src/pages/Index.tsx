@@ -8,15 +8,13 @@ import { LearnView } from "@/components/views/LearnView";
 import { ChatView } from "@/components/views/ChatView";
 import { ProfileView } from "@/components/views/ProfileView";
 import { GoalsView } from "@/components/views/GoalsView";
-import { BadgesView } from "@/components/views/BadgesView";
 import { SettingsView } from "@/components/views/SettingsView";
-import { ShopView } from "@/components/views/ShopView";
 import { OnboardingFlow } from "@/components/onboarding/OnboardingFlow";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
 
-type TabType = "home" | "budget" | "learn" | "chat" | "profile" | "goals" | "badges" | "settings" | "shop";
-type SettingsPage = 'main' | 'notifications' | 'privacy' | 'help' | 'profile';
+type TabType = "home" | "budget" | "learn" | "chat" | "profile" | "goals" | "settings";
+type SettingsPage = 'main' | 'privacy' | 'help' | 'profile';
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState<TabType>("home");
@@ -55,7 +53,6 @@ const Index = () => {
   }
 
   const userName = profile?.display_name || user.email?.split('@')[0] || 'User';
-  const points = profile?.total_points || 0;
 
   const navigateToSettings = (page: SettingsPage = 'main') => {
     setSettingsPage(page);
@@ -82,19 +79,13 @@ const Index = () => {
         return (
           <ProfileView 
             onNavigateToGoals={() => setActiveTab("goals")}
-            onNavigateToBadges={() => setActiveTab("badges")}
             onNavigateToSettings={navigateToSettings}
-            onNavigateToShop={() => setActiveTab("shop")}
           />
         );
       case "goals":
         return <GoalsView />;
-      case "badges":
-        return <BadgesView onBack={() => setActiveTab("profile")} />;
       case "settings":
         return <SettingsView onBack={() => setActiveTab("profile")} initialPage={settingsPage} />;
-      case "shop":
-        return <ShopView onBack={() => setActiveTab("profile")} />;
       default:
         return (
           <HomeView 
@@ -106,14 +97,13 @@ const Index = () => {
     }
   };
 
-  const showHeader = !["badges", "settings", "goals", "shop"].includes(activeTab);
+  const showHeader = !["settings", "goals"].includes(activeTab);
 
   return (
     <div className="min-h-screen bg-background">
       {showHeader && (
         <Header 
           userName={userName} 
-          points={points} 
           avatarChoice={profile?.avatar_choice}
           onLogoClick={() => setActiveTab("home")}
         />
@@ -124,7 +114,7 @@ const Index = () => {
       </main>
       
       <BottomNav 
-        activeTab={["goals", "badges", "settings", "shop"].includes(activeTab) ? "profile" : activeTab} 
+        activeTab={["goals", "settings"].includes(activeTab) ? "profile" : activeTab} 
         onTabChange={(tab) => setActiveTab(tab as TabType)} 
       />
     </div>

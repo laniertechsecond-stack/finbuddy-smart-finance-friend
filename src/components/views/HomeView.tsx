@@ -9,6 +9,7 @@ import { SetGoalModal } from "@/components/modals/SetGoalModal";
 import { AddCategoryModal } from "@/components/modals/AddCategoryModal";
 import { useBudget } from "@/hooks/useBudget";
 import { useLearning } from "@/hooks/useLearning";
+import { useProfile } from "@/hooks/useProfile";
 
 interface HomeViewProps {
   onNavigateToLearn?: () => void;
@@ -20,16 +21,20 @@ export function HomeView({ onNavigateToLearn, onNavigateToGoals, onNavigateToSet
   const [showAddExpense, setShowAddExpense] = useState(false);
   const [showSetGoal, setShowSetGoal] = useState(false);
   const [showAddCategory, setShowAddCategory] = useState(false);
-  const { totalBudget, totalSpent, remaining, loading, addTransaction, categories } = useBudget();
+  const { totalSpent, loading, addTransaction, categories } = useBudget();
   const { totalCompletedLessons, totalLessons, getNextLesson } = useLearning();
+  const { profile } = useProfile();
 
-  const percentUsed = totalBudget > 0 ? (totalSpent / totalBudget) * 100 : 0;
+  // Use monthly income from profile as the budget
+  const monthlyIncome = profile?.monthly_income || 0;
+  const remaining = monthlyIncome - totalSpent;
+  const percentUsed = monthlyIncome > 0 ? (totalSpent / monthlyIncome) * 100 : 0;
   const nextLesson = getNextLesson();
 
   return (
     <div className="space-y-6 pb-24">
       <BudgetOverview 
-        totalBudget={totalBudget}
+        totalBudget={monthlyIncome}
         spent={totalSpent}
         remaining={remaining}
         percentUsed={percentUsed}
