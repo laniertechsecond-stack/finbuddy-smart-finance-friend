@@ -5,9 +5,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
-import { Wallet, BookOpen, Sparkles, Mail, Lock, User } from 'lucide-react';
+import { Wallet, BookOpen, Sparkles, Mail, Lock } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { z } from 'zod';
+import finbudLogo from '@/assets/finbud-logo.png';
 
 const emailSchema = z.string().email('Please enter a valid email address');
 const passwordSchema = z.string().min(6, 'Password must be at least 6 characters');
@@ -16,7 +17,6 @@ export default function Auth() {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [displayName, setDisplayName] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const { signIn, signUp, user } = useAuth();
   const navigate = useNavigate();
@@ -59,7 +59,7 @@ export default function Auth() {
           toast.success('Welcome back!');
         }
       } else {
-        const { error } = await signUp(email, password, displayName);
+        const { error } = await signUp(email, password);
         if (error) {
           if (error.message.includes('already registered')) {
             toast.error('This email is already registered. Please sign in instead.');
@@ -81,9 +81,7 @@ export default function Auth() {
     <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
       {/* Logo & Branding */}
       <div className="text-center mb-8 animate-slide-up">
-        <div className="w-20 h-20 gradient-hero rounded-3xl flex items-center justify-center mx-auto mb-4 shadow-glow">
-          <Wallet className="w-10 h-10 text-primary-foreground" />
-        </div>
+        <img src={finbudLogo} alt="FinBud" className="w-24 h-24 mx-auto mb-4 object-contain" />
         <h1 className="text-3xl font-bold text-foreground">FinBud</h1>
         <p className="text-muted-foreground mt-2">Your personal finance buddy</p>
       </div>

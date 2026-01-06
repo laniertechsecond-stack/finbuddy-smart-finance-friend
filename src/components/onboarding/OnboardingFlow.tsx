@@ -8,6 +8,7 @@ import { Wallet, Calendar, DollarSign, Sparkles, ChevronRight, Check } from "luc
 import { useProfile } from "@/hooks/useProfile";
 import { useBudget } from "@/hooks/useBudget";
 import { toast } from "sonner";
+import finbudLogo from "@/assets/finbud-logo.png";
 
 interface OnboardingFlowProps {
   onComplete: () => void;
@@ -52,7 +53,7 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
   const [saving, setSaving] = useState(false);
   
   const { updateProfile } = useProfile();
-  const { updateCategory, categories } = useBudget();
+  const { updateCategory, addCategory, categories } = useBudget();
 
   const updateBudgets = (income: number) => {
     setCategoryBudgets(prev => prev.map(cat => ({
@@ -88,11 +89,18 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
         has_completed_onboarding: true,
       });
 
-      // Update categories with custom budgets
+      // Create or update categories with custom budgets
       for (const cat of categoryBudgets) {
         const existingCategory = categories.find(c => c.name === cat.name);
         if (existingCategory) {
           await updateCategory(existingCategory.id, { budget_amount: cat.amount });
+        } else {
+          await addCategory({
+            name: cat.name,
+            icon: cat.icon,
+            color: cat.color,
+            budget_amount: cat.amount,
+          });
         }
       }
 
@@ -124,9 +132,7 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
       {step === 1 && (
         <div className="w-full max-w-md animate-slide-up">
           <div className="text-center mb-8">
-            <div className="w-16 h-16 gradient-hero rounded-2xl flex items-center justify-center mx-auto mb-4">
-              <Sparkles className="w-8 h-8 text-primary-foreground" />
-            </div>
+            <img src={finbudLogo} alt="FinBud" className="w-20 h-20 mx-auto mb-4 object-contain" />
             <h1 className="text-2xl font-bold text-foreground">Let's personalize your experience</h1>
             <p className="text-muted-foreground mt-2">Choose an avatar and set your name</p>
           </div>

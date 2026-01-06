@@ -1,15 +1,14 @@
-import { Coins, Wallet } from "lucide-react";
 import { getAvatarEmoji } from "@/components/modals/AvatarPickerModal";
 import { format } from "date-fns";
+import finbudLogo from "@/assets/finbud-logo.png";
 
 interface HeaderProps {
   userName: string;
-  points: number;
   avatarChoice?: string | null;
   onLogoClick?: () => void;
 }
 
-export function Header({ userName, points, avatarChoice, onLogoClick }: HeaderProps) {
+export function Header({ userName, avatarChoice, onLogoClick }: HeaderProps) {
   const today = new Date();
   const formattedDate = format(today, 'EEEE, MMMM d, yyyy');
 
@@ -21,9 +20,7 @@ export function Header({ userName, points, avatarChoice, onLogoClick }: HeaderPr
           onClick={onLogoClick}
           className="flex items-center gap-2 hover:opacity-80 transition-opacity"
         >
-          <div className="w-8 h-8 rounded-xl gradient-hero flex items-center justify-center shadow-finbud">
-            <Wallet className="w-4 h-4 text-primary-foreground" />
-          </div>
+          <img src={finbudLogo} alt="FinBud" className="w-10 h-10 object-contain" />
           <span className="text-xl font-bold text-foreground">FinBud</span>
         </button>
       </div>
@@ -37,14 +34,6 @@ export function Header({ userName, points, avatarChoice, onLogoClick }: HeaderPr
             <div>
               <p className="text-sm text-muted-foreground">Welcome back,</p>
               <h1 className="font-semibold text-foreground">{userName}</h1>
-            </div>
-          </div>
-          
-          <div className="flex items-center gap-2">
-            {/* Points Badge */}
-            <div className="flex items-center gap-1 bg-finbud-gold-light px-3 py-1.5 rounded-full">
-              <Coins className="w-4 h-4 text-finbud-gold" />
-              <span className="text-sm font-semibold text-foreground">{points}</span>
             </div>
           </div>
         </div>
