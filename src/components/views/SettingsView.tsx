@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useTheme } from "next-themes";
-import { ArrowLeft, Shield, HelpCircle, ChevronRight, User, Download, Trash2, Mail, Key } from "lucide-react";
+import { ArrowLeft, Shield, HelpCircle, ChevronRight, User, Download, Trash2, Mail, Key, ImageIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
@@ -13,8 +13,9 @@ import { useAuth } from "@/hooks/useAuth";
 import { AvatarPickerModal, getAvatarEmoji } from "@/components/modals/AvatarPickerModal";
 import { Slider } from "@/components/ui/slider";
 import { supabase } from "@/integrations/supabase/client";
+import { LogoUploader } from "@/components/LogoUploader";
 
-type SettingsPage = 'main' | 'privacy' | 'help' | 'profile';
+type SettingsPage = 'main' | 'privacy' | 'help' | 'profile' | 'logo-tool';
 
 interface SettingsViewProps {
   onBack: () => void;
@@ -355,7 +356,37 @@ export function SettingsView({ onBack, initialPage = 'main' }: SettingsViewProps
     );
   }
 
-  // Main settings page
+  if (currentPage === 'logo-tool') {
+    return (
+      <div className="space-y-6 pb-24">
+        <div className="flex items-center gap-4">
+          <Button variant="ghost" size="icon" onClick={handleBack}>
+            <ArrowLeft className="w-5 h-5" />
+          </Button>
+          <h2 className="text-2xl font-bold text-foreground">Logo Background Remover</h2>
+        </div>
+
+        <div className="bg-card rounded-3xl p-6 shadow-sm">
+          <p className="text-muted-foreground text-sm mb-4">
+            Upload any logo image and we'll automatically remove the background to create a transparent PNG.
+          </p>
+          <LogoUploader 
+            onLogoProcessed={(blob, url) => {
+              toast.success("Background removed successfully!");
+            }}
+          />
+        </div>
+
+        <div className="bg-muted/50 rounded-2xl p-4">
+          <p className="text-xs text-muted-foreground text-center">
+            Powered by AI segmentation. Processing happens entirely in your browser.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+
   return (
     <div className="space-y-6 pb-24">
       <div className="flex items-center gap-4">
@@ -378,6 +409,7 @@ export function SettingsView({ onBack, initialPage = 'main' }: SettingsViewProps
           { icon: User, label: 'Edit Profile', page: 'profile' as SettingsPage },
           { icon: Shield, label: 'Privacy & Security', page: 'privacy' as SettingsPage },
           { icon: HelpCircle, label: 'Help Center', page: 'help' as SettingsPage },
+          { icon: ImageIcon, label: 'Logo Background Remover', page: 'logo-tool' as SettingsPage },
         ].map((item, index) => {
           const Icon = item.icon;
           return (
@@ -386,7 +418,7 @@ export function SettingsView({ onBack, initialPage = 'main' }: SettingsViewProps
               onClick={() => setCurrentPage(item.page)}
               className={cn(
                 "w-full flex items-center gap-4 p-4 hover:bg-muted/50 transition-colors",
-                index !== 2 && "border-b border-border"
+                index !== 3 && "border-b border-border"
               )}
             >
               <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center">
