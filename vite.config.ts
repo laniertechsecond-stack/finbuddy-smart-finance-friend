@@ -16,3 +16,7 @@ export default defineConfig(({ mode }) => ({
     },
   },
 }));
+export default defineConfig({
+  base: "/finbuddy-smart-finance-friend/",
+  plugins: [react()],
+})
